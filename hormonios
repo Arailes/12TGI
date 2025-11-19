@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorex: Hormônios do TGI</title>
+    <style>
+        :root {
+            --primary-color: #005b96; /* Azul médico */
+            --secondary-color: #6497b1;
+            --accent-color: #b3cde0;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --highlight-red: #d9534f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Grid Layout */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        /* Botões/Cards */
+        .hormone-card {
+            background-color: var(--card-bg);
+            border-left: 5px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .hormone-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+            background-color: #fafafa;
+        }
+
+        .hormone-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .icon-arrow {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        /* Modal (Pop-up) */
+        .modal-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content {
+            background-color: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {transform: translateY(20px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+        .info-block {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .info-block:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-weight: bold;
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .text {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #444;
+        }
+
+        .clinical-note {
+            background-color: #fff3f3;
+            border-left: 4px solid var(--highlight-red);
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #a94442;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 50px;
+            color: #888;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Reguladores do TGI</h1>
+        <p class="subtitle">Memorex Interativo para Estudantes de Medicina</p>
+    </header>
+
+    <div class="grid-container" id="cardGrid">
+        </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nome do Hormônio</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Baseado no material de estudo: 12 Hormônios Reguladores do Sistema Digestivo by Arailes Feitosa T6A</p>
+    </footer>
+
+    <script>A
+        // Dados extraídos do PDF fornecido
+        const hormonios = [
+            {
+                id: 1,
+                nome: "Gastrina",
+                funcao: "Estimula células parietais a secretarem HCl e promove crescimento da mucosa gástrica.",
+                producao: "Células G do antro gástrico e duodeno.",
+                estimulo: "Presença de proteínas, distensão gástrica e vagotonia.",
+                clinica: "<strong>Síndrome de Zollinger-Ellison:</strong> Excesso causa hipercloridria, levando a úlceras pépticas múltiplas e pH baixo mesmo em jejum."
+            },
+            {
+                id: 2,
+                nome: "Secretina",
+                funcao: "Estimula o pâncreas a liberar bicarbonato, neutralizando o ácido no duodeno.",
+                producao: "Células S do duodeno (implícito na função duodenal).",
+                estimulo: "pH ácido no duodeno após a chegada do quimo gástrico.",
+                clinica: "<strong>Deficiência:</strong> O pH duodenal permanece baixo, causando inativação enzimática e diarreia ácida."
+            },
+            {
+                id: 3,
+                nome: "Colecistocinina (CCK)",
+                funcao: "Estimula contração da vesícula biliar e secreção de enzimas pancreáticas; retarda esvaziamento gástrico.",
+                producao: "Células I do duodeno e jejuno.",
+                estimulo: "Presença de gorduras e proteínas no quimo.",
+                clinica: null
+            },
+            {
+                id: 4,
+                nome: "Grelina",
+                funcao: "Estimula o apetite e secreção do GH (hormônio do crescimento).",
+                producao: "Fundo do estômago.",
+                estimulo: "Alta antes das refeições, cai após comer.",
+                clinica: null
+            },
+            {
+                id: 5,
+                nome: "Peptídeo YY (PYY)",
+                funcao: "Induz saciedade e inibe motilidade e secreção gástrica. Inibe o centro da fome (núcleo arqueado).",
+                producao: "Íleo e cólon distal.",
+                estimulo: "Presença de nutrientes no íleo.",
+                clinica: "<strong>Pós-Bariátrica:</strong> Esvaziamento gástrico rápido aumenta estímulo no íleo, elevando PYY e causando saciedade precoce."
+            },
+            {
+                id: 6,
+                nome: "Motilina",
+                funcao: "Coordena os complexos motores migratórios (CMM) - ondas de contração no jejum.",
+                producao: "Células M do intestino delgado.",
+                estimulo: "Liberação durante o jejum, em ciclos a cada 90-120 minutos.",
+                clinica: "<strong>Redução:</strong> Leva à lentificação do esvaziamento gástrico e sensação de plenitude."
+            },
+            {
+                id: 7,
+                nome: "Somatostatina",
+                funcao: "Inibe secreção de gastrina, insulina, glucagon, enzimas pancreáticas e HCL.",
+                producao: "Células D do pâncreas e mucosa gástrica.",
+                estimulo: "pH ácido gástrico (feedback negativo).",
+                clinica: "<strong>Somatostatinoma:</strong> Excesso causa hipocloridria, má digestão e diarreia por inibição difusa."
+            },
+            {
+                id: 8,
+                nome: "GIP",
+                nomeCompleto: "Peptídeo Inibidor Gástrico / Polipeptídeo Insulinotrópico Dependente de Glicose",
+                funcao: "Estimula secreção de insulina em resposta à glicose oral (efeito incretina).",
+                producao: "Células K do duodeno e jejuno.",
+                estimulo: "Presença de glicose, lipídios e aminoácidos.",
+                clinica: "Explica por que a glicose oral gera mais insulina que a glicose venosa."
+            },
+            {
+                id: 9,
+                nome: "GLP-1",
+                nomeCompleto: "Glucagon-like Peptide-1",
+                funcao: "Estimula insulina, inibe glucagon, retarda esvaziamento gástrico e aumenta saciedade.",
+                producao: "Células L do íleo e cólon.",
+                estimulo: "Ingestão de nutrientes.",
+                clinica: "<strong>Farmacologia:</strong> Agonistas de GLP-1 (ex: liraglutida, semaglutida) são usados no tratamento de diabetes tipo 2 e obesidade."
+            },
+            {
+                id: 10,
+                nome: "Oximodulina (OXM)",
+                funcao: "Inibe esvaziamento e secreção gástrica (semelhante ao GLP-1). Regula equilíbrio energético e reduz apetite.",
+                producao: "Células L do intestino distal.",
+                estimulo: "Ingestão de alimentos.",
+                clinica: null
+            },
+            {
+                id: 11,
+                nome: "VIP",
+                nomeCompleto: "Peptídeo Intestinal Vasoativo",
+                funcao: "Vasodilatação esplâncnica, estimula secreção intestinal e relaxa musculatura lisa.",
+                producao: "Neurônios entéricos e pâncreas.",
+                estimulo: "Distensão intestinal e atividade vagal.",
+                clinica: "<strong>VIPoma (Síndrome WDHA):</strong> Excesso causa Diarreia Aquosa, Hipocalemia e Acidose (Watery Diarrhea, Hypokalemia, Achlorhydria)."
+            },
+            {
+                id: 12,
+                nome: "GRP",
+                nomeCompleto: "Peptídeo Liberador de Gastrina",
+                funcao: "Estimula liberação de gastrina pelas células G.",
+                producao: "Neurônios entéricos do antro gástrico.",
+                estimulo: "Atividade vagal.",
+                clinica: "Coordena secreção gástrica durante a fase cefálica e gástrica."
+            }
+        ];
+
+        const grid = document.getElementById('cardGrid');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+
+        // Função para gerar os cards
+        function renderCards() {
+            hormonios.forEach(h => {
+                const card = document.createElement('div');
+                card.className = 'hormone-card';
+                card.innerHTML = `
+                    <span class="hormone-name">${h.nome}</span>
+                    <span class="icon-arrow">→</span>
+                `;
+                card.onclick = () => openModal(h);
+                grid.appendChild(card);
+            });
+        }
+
+        // Função para abrir o modal com detalhes
+        function openModal(h) {
+            modalTitle.innerText = h.nome;
+            
+            let contentHTML = '';
+            
+            if(h.nomeCompleto) {
+                contentHTML += `<div class="info-block"><span class="label">Nome Completo</span><span class="text">${h.nomeCompleto}</span></div>`;
+            }
+            
+            contentHTML += `<div class="info-block"><span class="label">Produção/Local</span><span class="text">${h.producao}</span></div>`;
+            contentHTML += `<div class="info-block"><span class="label">Função Principal</span><span class="text">${h.funcao}</span></div>`;
+            contentHTML += `<div class="info-block"><span class="label">Estímulo/Liberação</span><span class="text">${h.estimulo}</span></div>`;
+
+            if (h.clinica) {
+                contentHTML += `<div class="clinical-note">${h.clinica}</div>`;
+            }
+
+            modalBody.innerHTML = contentHTML;
+            modalOverlay.style.display = 'flex';
+        }
+
+        // Função para fechar modal
+        function closeModal() {
+            modalOverlay.style.display = 'none';
+        }
+
+        // Fechar ao clicar fora do modal
+        window.onclick = function(event) {
+            if (event.target == modalOverlay) {
+                closeModal();
+            }
+        }
+
+        // Inicializar
+        renderCards();
+
+    </script>
+</body>
+</html>
+```
